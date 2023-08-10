@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.udacity.asteroidradar.Asteroid
 import com.udacity.asteroidradar.Constants
+import com.udacity.asteroidradar.PictureOfDay
 import com.udacity.asteroidradar.api.NASAApi
 import com.udacity.asteroidradar.api.parseAsteroidsJsonResult
 import kotlinx.coroutines.launch
@@ -20,12 +21,17 @@ enum class NASAApiStatus { LOADING, ERROR, DONE }
 
 class MainViewModel : ViewModel() {
 
-    // The internal MutableLiveData String that stores the status of the most recent network request
-    private val _status = MutableLiveData<NASAApiStatus>()
+    private val _statusAsteroids = MutableLiveData<NASAApiStatus>()
+    val statusAsteroids: LiveData<NASAApiStatus>
+        get() = _statusAsteroids
 
-    // The external immutable LiveData for the request status String
-    val status: LiveData<NASAApiStatus>
-        get() = _status
+    private val _statusPictureDay = MutableLiveData<NASAApiStatus>()
+    val statusPictureDay: LiveData<NASAApiStatus>
+        get() = _statusPictureDay
+
+    private val _pictureDay = MutableLiveData<PictureOfDay>()
+    val pictureDay: LiveData<PictureOfDay>
+        get() = _pictureDay
 
     private val _asteroids = MutableLiveData<List<Asteroid>>()
     val asteroids: LiveData<List<Asteroid>>
@@ -45,11 +51,12 @@ class MainViewModel : ViewModel() {
         val oneWeekDate = dateFormat.format(timeInOneWeek)
 
         getAsteroids(todayDate, oneWeekDate)
+        getPictureOfDay()
     }
 
     private fun getAsteroids(startDate: String, endDate: String) {
         viewModelScope.launch {
-            _status.value = NASAApiStatus.LOADING
+            _statusAsteroids.value = NASAApiStatus.LOADING
             try {
                 val resultString = NASAApi.retrofitService.getAsteroids(startDate, endDate)
                 val resultJson = JSONObject(resultString.body() ?: "")
@@ -57,11 +64,26 @@ class MainViewModel : ViewModel() {
                 if (listResult.isNotEmpty()) {
                     _asteroids.value = listResult
                 }
-                _status.value = NASAApiStatus.DONE
+                _statusAsteroids.value = NASAApiStatus.DONE
             } catch (e: Exception) {
-                _status.value = NASAApiStatus.ERROR
+                _statusAsteroids.value = NASAApiStatus.ERROR
                 Log.e("MainViewModel", "Error:" + e.message)
                 _asteroids.value = ArrayList()
+            }
+        }
+    }
+
+    private fun getPictureOfDay() {
+        viewModelScope.launch {
+            _statusPictureDay.value = NASAApiStatus.LOADING
+            try {
+                val result = NASAApi.retrofitService.getPictureOfDay()
+                _pictureDay.value = result
+                _statusPictureDay.value = NASAApiStatus.DONE
+            } catch (e: Exception) {
+                _statusPictureDay.value = NASAApiStatus.ERROR
+                _pictureDay.value = PictureOfDay("string", "", "")
+                Log.e("MainViewModel", "Error:" + e.message)
             }
         }
     }
