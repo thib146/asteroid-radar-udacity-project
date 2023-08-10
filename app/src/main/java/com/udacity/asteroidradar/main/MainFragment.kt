@@ -27,7 +27,7 @@ class MainFragment : Fragment() {
         })
 
         viewModel.pictureDay.observe(viewLifecycleOwner) {
-            if (null != it && it.url.isNotEmpty()) {
+            if (null != it && it.url.isNotEmpty() && it.mediaType == NASAPictureOfDayMediaTypeImage) {
                 Picasso.get().load(it.url).into(binding.activityMainImageOfTheDay)
             }
         }
@@ -51,5 +51,9 @@ class MainFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return true
+    }
+
+    companion object {
+        const val NASAPictureOfDayMediaTypeImage = "image"
     }
 }
