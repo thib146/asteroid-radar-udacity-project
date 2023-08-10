@@ -27,7 +27,7 @@ class MainFragment : Fragment() {
         })
 
         viewModel.pictureDay.observe(viewLifecycleOwner) {
-            if (null != it) {
+            if (null != it && it.url.isNotEmpty()) {
                 Picasso.get().load(it.url).into(binding.activityMainImageOfTheDay)
             }
         }

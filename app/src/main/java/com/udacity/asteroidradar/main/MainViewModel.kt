@@ -1,17 +1,18 @@
 package com.udacity.asteroidradar.main
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.udacity.asteroidradar.Asteroid
 import com.udacity.asteroidradar.Constants
 import com.udacity.asteroidradar.PictureOfDay
 import com.udacity.asteroidradar.api.NASAApi
-import com.udacity.asteroidradar.api.parseAsteroidsJsonResult
+import com.udacity.asteroidradar.database.getDatabase
+import com.udacity.asteroidradar.repository.AsteroidsRepository
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -19,7 +20,12 @@ import java.util.Locale
 
 enum class NASAApiStatus { LOADING, ERROR, DONE }
 
-class MainViewModel : ViewModel() {
+class MainViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val database = getDatabase(application)
+    private val asteroidsRepository = AsteroidsRepository(database)
+
+    val asteroids = asteroidsRepository.asteroids
 
     private val _statusAsteroids = MutableLiveData<NASAApiStatus>()
     val statusAsteroids: LiveData<NASAApiStatus>
@@ -33,10 +39,6 @@ class MainViewModel : ViewModel() {
     val pictureDay: LiveData<PictureOfDay>
         get() = _pictureDay
 
-    private val _asteroids = MutableLiveData<List<Asteroid>>()
-    val asteroids: LiveData<List<Asteroid>>
-        get() = _asteroids
-
     private val _navigateToSelectedAsteroid = MutableLiveData<Asteroid?>()
     val navigateToSelectedAsteroid: LiveData<Asteroid?>
         get() = _navigateToSelectedAsteroid
@@ -46,7 +48,7 @@ class MainViewModel : ViewModel() {
         val currentTime = calendar.time
         val dateFormat = SimpleDateFormat(Constants.API_QUERY_DATE_FORMAT, Locale.getDefault())
         val todayDate = dateFormat.format(currentTime)
-        calendar.add(Calendar.DAY_OF_YEAR, 1)
+        calendar.add(Calendar.DAY_OF_YEAR, 7)
         val timeInOneWeek = calendar.time
         val oneWeekDate = dateFormat.format(timeInOneWeek)
 
@@ -58,17 +60,11 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             _statusAsteroids.value = NASAApiStatus.LOADING
             try {
-                val resultString = NASAApi.retrofitService.getAsteroids(startDate, endDate)
-                val resultJson = JSONObject(resultString.body() ?: "")
-                val listResult = parseAsteroidsJsonResult(resultJson)
-                if (listResult.isNotEmpty()) {
-                    _asteroids.value = listResult
-                }
+                asteroidsRepository.refreshAsteroids(startDate, endDate)
                 _statusAsteroids.value = NASAApiStatus.DONE
             } catch (e: Exception) {
                 _statusAsteroids.value = NASAApiStatus.ERROR
                 Log.e("MainViewModel", "Error:" + e.message)
-                _asteroids.value = ArrayList()
             }
         }
     }
