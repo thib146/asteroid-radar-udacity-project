@@ -20,6 +20,7 @@ class RefreshAsteroidsDataWorker(appContext: Context, params: WorkerParameters):
         return try {
             val formattedDates = getTodayAndOneWeekFormattedDates()
             repository.refreshAsteroids(formattedDates[0], formattedDates[1])
+            repository.deleteOldAsteroids(formattedDates[0])
             return Result.success()
         } catch (exception: HttpException) {
             Result.retry()

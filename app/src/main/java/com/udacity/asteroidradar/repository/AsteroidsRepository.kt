@@ -22,6 +22,12 @@ class AsteroidsRepository(private val database: AsteroidsDatabase) {
             val resultJson = JSONObject(resultString.body() ?: "")
             val asteroids = parseAsteroidsJsonResult(resultJson)
             database.asteroidsDao.insertAll(*asteroids.asDatabaseModel())
+            deleteOldAsteroids(startDate)
         }
     }
+
+    fun deleteOldAsteroids(startDate: String) {
+        database.asteroidsDao.deleteAsteroidsBeforeToday(startDate)
+    }
+
 }
