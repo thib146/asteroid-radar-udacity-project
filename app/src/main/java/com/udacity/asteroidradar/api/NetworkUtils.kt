@@ -57,3 +57,14 @@ private fun getNextSevenDaysFormattedDates(): ArrayList<String> {
 
     return formattedDateList
 }
+
+fun getTodayAndOneWeekFormattedDates(): ArrayList<String> {
+    val dateFormat = SimpleDateFormat(Constants.API_QUERY_DATE_FORMAT, Locale.getDefault())
+
+    val calendar = Calendar.getInstance()
+    val todayDate = dateFormat.format(calendar.time)
+    calendar.add(Calendar.DAY_OF_YEAR, 7)
+    val oneWeekDate = dateFormat.format(calendar.time)
+
+    return arrayListOf(todayDate, oneWeekDate)
+}

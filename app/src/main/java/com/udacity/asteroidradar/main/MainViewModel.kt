@@ -7,16 +7,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.udacity.asteroidradar.Asteroid
-import com.udacity.asteroidradar.Constants
 import com.udacity.asteroidradar.PictureOfDay
 import com.udacity.asteroidradar.api.NASAApi
+import com.udacity.asteroidradar.api.getTodayAndOneWeekFormattedDates
 import com.udacity.asteroidradar.database.getDatabase
 import com.udacity.asteroidradar.repository.AsteroidsRepository
 import kotlinx.coroutines.launch
 import java.lang.Exception
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 enum class NASAApiStatus { LOADING, ERROR, DONE }
 
@@ -44,15 +41,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         get() = _navigateToSelectedAsteroid
 
     init {
-        val calendar = Calendar.getInstance()
-        val currentTime = calendar.time
-        val dateFormat = SimpleDateFormat(Constants.API_QUERY_DATE_FORMAT, Locale.getDefault())
-        val todayDate = dateFormat.format(currentTime)
-        calendar.add(Calendar.DAY_OF_YEAR, 7)
-        val timeInOneWeek = calendar.time
-        val oneWeekDate = dateFormat.format(timeInOneWeek)
+        val formattedDates = getTodayAndOneWeekFormattedDates()
 
-        getAsteroids(todayDate, oneWeekDate)
+        getAsteroids(formattedDates[0], formattedDates[1])
         getPictureOfDay()
     }
 
