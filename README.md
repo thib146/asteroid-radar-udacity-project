@@ -15,6 +15,8 @@ It showcases simple usage of network handling with Retrofit, Room, Background wo
 
 # Project Instructions
 
+NOTE: add your NASA API Key in the `Constants.kt` file in the `API_KEY` variable
+
 The app contains 2 screens in this order:
 
 * Asteroids List screen: shows a list of asteroids passing by close to the earth, taken from NASA's API - https://api.nasa.gov/
