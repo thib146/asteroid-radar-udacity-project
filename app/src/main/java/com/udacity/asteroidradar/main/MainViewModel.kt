@@ -42,7 +42,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         val formattedDates = getTodayAndOneWeekFormattedDates()
-
         getAsteroids(formattedDates[0], formattedDates[1])
         getPictureOfDay()
     }
