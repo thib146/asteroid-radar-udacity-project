@@ -1,10 +1,10 @@
 package com.udacity.asteroidradar.repository
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
 import com.udacity.asteroidradar.Asteroid
 import com.udacity.asteroidradar.api.NASAApi
+import com.udacity.asteroidradar.api.getTodayFormattedDates
 import com.udacity.asteroidradar.api.parseAsteroidsJsonResult
+import com.udacity.asteroidradar.database.AsteroidFilter
 import com.udacity.asteroidradar.database.AsteroidsDatabase
 import com.udacity.asteroidradar.database.asDatabaseModel
 import com.udacity.asteroidradar.database.asDomainModel
@@ -13,8 +13,6 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 class AsteroidsRepository(private val database: AsteroidsDatabase) {
-
-    val asteroids: LiveData<List<Asteroid>> = database.asteroidsDao.getAsteroids().map { it.asDomainModel() }
 
     suspend fun refreshAsteroids(startDate: String, endDate: String) {
         withContext(Dispatchers.IO) {
@@ -26,8 +24,30 @@ class AsteroidsRepository(private val database: AsteroidsDatabase) {
         }
     }
 
-    fun deleteOldAsteroids(startDate: String) {
-        database.asteroidsDao.deleteAsteroidsBeforeToday(startDate)
+    suspend fun getAllAsteroids(): List<Asteroid>? {
+        return withContext(Dispatchers.IO) {
+            database.asteroidsDao.getAsteroids()?.asDomainModel()
+        }
+    }
+
+    suspend fun getFilteredAsteroids(filter: AsteroidFilter): List<Asteroid>? {
+        return withContext(Dispatchers.IO) {
+            when (filter) {
+                AsteroidFilter.ALL, AsteroidFilter.WEEK -> {
+                    database.asteroidsDao.getAsteroids()?.asDomainModel()
+                }
+
+                AsteroidFilter.DAY -> {
+                    database.asteroidsDao.getAsteroidsToday(getTodayFormattedDates()).asDomainModel()
+                }
+            }
+        }
+    }
+
+    suspend fun deleteOldAsteroids(startDate: String) {
+        withContext(Dispatchers.IO) {
+            database.asteroidsDao.deleteAsteroidsBeforeToday(startDate)
+        }
     }
 
 }

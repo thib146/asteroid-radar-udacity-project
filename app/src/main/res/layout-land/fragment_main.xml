@@ -63,8 +63,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/activity_main_image_of_the_day_layout"
-            app:layout_constraintTop_toTopOf="parent"
-            app:listData="@{viewModel.asteroids}" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ProgressBar
             android:id="@+id/status_loading_wheel"

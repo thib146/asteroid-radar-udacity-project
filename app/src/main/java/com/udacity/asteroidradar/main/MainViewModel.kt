@@ -10,6 +10,7 @@ import com.udacity.asteroidradar.Asteroid
 import com.udacity.asteroidradar.PictureOfDay
 import com.udacity.asteroidradar.api.NASAApi
 import com.udacity.asteroidradar.api.getTodayAndOneWeekFormattedDates
+import com.udacity.asteroidradar.database.AsteroidFilter
 import com.udacity.asteroidradar.database.getDatabase
 import com.udacity.asteroidradar.repository.AsteroidsRepository
 import kotlinx.coroutines.launch
@@ -22,7 +23,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val database = getDatabase(application)
     private val asteroidsRepository = AsteroidsRepository(database)
 
-    val asteroids = asteroidsRepository.asteroids
+    private var _asteroids = MutableLiveData<List<Asteroid>>()
+    val asteroids: LiveData<List<Asteroid>>
+        get() = _asteroids
 
     private val _statusAsteroids = MutableLiveData<NASAApiStatus>()
     val statusAsteroids: LiveData<NASAApiStatus>
@@ -41,9 +44,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         get() = _navigateToSelectedAsteroid
 
     init {
-        val formattedDates = getTodayAndOneWeekFormattedDates()
-        getAsteroids(formattedDates[0], formattedDates[1])
-        getPictureOfDay()
+        _statusAsteroids.value = NASAApiStatus.LOADING
+        _statusPictureDay.value = NASAApiStatus.LOADING
+
+        viewModelScope.launch {
+            val formattedDates = getTodayAndOneWeekFormattedDates()
+            _asteroids.value = asteroidsRepository.getAllAsteroids()
+            getAsteroids(formattedDates[0], formattedDates[1])
+            getPictureOfDay()
+        }
     }
 
     private fun getAsteroids(startDate: String, endDate: String) {
@@ -71,6 +80,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 _pictureDay.value = PictureOfDay("string", "", "")
                 Log.e("MainViewModel", "Error:" + e.message)
             }
+        }
+    }
+
+    fun setFilter(filter: AsteroidFilter) {
+        viewModelScope.launch {
+            _asteroids.value = asteroidsRepository.getFilteredAsteroids(filter)
         }
     }
 

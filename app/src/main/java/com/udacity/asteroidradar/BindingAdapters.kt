@@ -5,15 +5,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
-import androidx.recyclerview.widget.RecyclerView
-import com.udacity.asteroidradar.main.AsteroidsAdapter
 import com.udacity.asteroidradar.main.NASAApiStatus
-
-@BindingAdapter("listData")
-fun bindRecyclerView(recyclerView: RecyclerView, data: List<Asteroid>?) {
-    val adapter = recyclerView.adapter as AsteroidsAdapter
-    adapter.submitList(data)
-}
 
 @BindingAdapter("statusIcon")
 fun bindAsteroidStatusImage(imageView: ImageView, isHazardous: Boolean) {
@@ -38,14 +30,12 @@ fun bindStatus(statusImageView: ProgressBar, status: NASAApiStatus) {
     when (status) {
         NASAApiStatus.LOADING -> {
             statusImageView.visibility = View.VISIBLE
-//            statusImageView.setImageResource(R.drawable.loading_img)
         }
         NASAApiStatus.DONE -> {
             statusImageView.visibility = View.GONE
         }
         NASAApiStatus.ERROR -> {
             statusImageView.visibility = View.VISIBLE
-//            statusImageView.setImageResource(R.drawable.ic_connection_error)
         }
     }
 }

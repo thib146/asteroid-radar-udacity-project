@@ -11,9 +11,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.squareup.picasso.Picasso
 import com.udacity.asteroidradar.R
+import com.udacity.asteroidradar.database.AsteroidFilter
 import com.udacity.asteroidradar.databinding.FragmentMainBinding
 
 class MainFragment : Fragment() {
+
+    private lateinit var adapter: AsteroidsAdapter
 
     private val viewModel: MainViewModel by lazy {
         ViewModelProvider(this)[MainViewModel::class.java]
@@ -32,7 +35,11 @@ class MainFragment : Fragment() {
             viewModel.displayAsteroidDetails(it)
         })
 
-        binding.asteroidRecycler.adapter as AsteroidsAdapter
+        adapter = binding.asteroidRecycler.adapter as AsteroidsAdapter
+
+        viewModel.asteroids.observe(viewLifecycleOwner) {
+            adapter.submitList(it)
+        }
 
         viewModel.pictureDay.observe(viewLifecycleOwner) {
             if (null != it && it.url.isNotEmpty() && it.mediaType == NASAPictureOfDayMediaTypeImage) {
@@ -63,12 +70,15 @@ class MainFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.show_next_week_asteroids -> {
+                        viewModel.setFilter(AsteroidFilter.WEEK)
                         true
                     }
                     R.id.show_next_today_asteroids -> {
+                        viewModel.setFilter(AsteroidFilter.DAY)
                         true
                     }
                     R.id.show_saved_asteroids -> {
+                        viewModel.setFilter(AsteroidFilter.ALL)
                         true
                     }
                     else -> false

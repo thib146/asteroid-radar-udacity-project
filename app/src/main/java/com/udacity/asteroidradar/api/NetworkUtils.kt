@@ -68,3 +68,9 @@ fun getTodayAndOneWeekFormattedDates(): ArrayList<String> {
 
     return arrayListOf(todayDate, oneWeekDate)
 }
+
+fun getTodayFormattedDates(): String {
+    val dateFormat = SimpleDateFormat(Constants.API_QUERY_DATE_FORMAT, Locale.getDefault())
+    val calendar = Calendar.getInstance()
+    return dateFormat.format(calendar.time)
+}
